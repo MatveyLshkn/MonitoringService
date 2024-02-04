@@ -15,8 +15,10 @@
 
 # Запуск
 1. Склонируйте репозиторий
-2. Запустите метод main
-
+2. Имеется docker-compose.yml файл для postgres. Он находится в src/main/resources
+3. В папке src/main/resources имеется файл application.properties где находится конфигурация для работы приложения с бд.
+4. Для создания схем и таблиц с данными требуется запустить DatabaseCreator.main или запустить там метод createAll()
+5. Запустите метод main
 
 # Использование
 - В программе заранее создан аккаунт админа (username: Admin, password: admin)
