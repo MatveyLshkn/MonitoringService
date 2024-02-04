@@ -2,7 +2,17 @@
 
 Сервис для подачи показаний счетчиков отопления, горячей и холодной воды
 
-
+## Стэк: 
+- Java 17
+- Gradle
+- PostgreSQL
+- JDBC
+- Lombok
+- AssertJ
+- Mockito
+- Junit5
+- Liquibase
+- TestContainers
 
 # Функциональность
 - Регистрация/Авторизация пользователя
