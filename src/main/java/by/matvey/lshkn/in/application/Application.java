@@ -1,13 +1,11 @@
 package by.matvey.lshkn.in.application;
 
-import by.matvey.lshkn.entity.Measurement;
-import by.matvey.lshkn.entity.Meter;
-import by.matvey.lshkn.entity.Role;
-import by.matvey.lshkn.entity.User;
+import by.matvey.lshkn.entity.*;
 import by.matvey.lshkn.service.MeasurementService;
 import by.matvey.lshkn.service.MeterService;
+import by.matvey.lshkn.service.MeterTypeService;
 import by.matvey.lshkn.service.UserService;
-import by.matvey.lshkn.util.LoggerUtil;
+import by.matvey.lshkn.util.AuditUtil;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -20,9 +18,10 @@ import java.util.Scanner;
  * Main Console application
  */
 public class Application {
-    private final UserService userService = UserService.getInstance();
-    private final MeterService meterService = MeterService.getInstance();
-    private final MeasurementService measurementService = MeasurementService.getInstance();
+    private UserService userService = UserService.getInstance();
+    private MeterService meterService = MeterService.getInstance();
+    private MeasurementService measurementService = MeasurementService.getInstance();
+    private MeterTypeService meterTypeService = MeterTypeService.getInstance();
     private Scanner scan = new Scanner(System.in);
     private String command;
 
@@ -62,6 +61,7 @@ public class Application {
                         continue;
                     } else currentUser = maybeUser.get();
                     System.out.println("You are successfully registered as: " + currentUser.getUsername());
+                    AuditUtil.write(LocalDateTime.now() + " User: " + currentUser.getUsername() + " registered");
                     break;
                 }
                 case "2": {
@@ -71,6 +71,7 @@ public class Application {
                         continue;
                     } else currentUser = maybeUser.get();
                     System.out.println("You are successfully authorized as: " + currentUser.getUsername());
+                    AuditUtil.write(LocalDateTime.now() + " User: " + currentUser.getUsername() + " authorized");
                     break;
                 }
                 case "3": {
@@ -111,7 +112,7 @@ public class Application {
         while (true) {
             System.out.println("""
                             Admin Menu:
-                    1. Add meter
+                    1. Add meter type
                     2. Print all measurements by username
                     3. Print all users
                     4. Get logs
@@ -120,40 +121,39 @@ public class Application {
             command = scan.nextLine();
             switch (command) {
                 case "1": {
-                    System.out.println("Enter name of the new meter:");
+                    System.out.println("Enter name of the new meter type:");
                     String meterName = scan.nextLine();
-                    if(meterService.getAvailableMeterNames().contains(meterName)){
+                    if (meterTypeService.getAllMeterTypes().stream()
+                            .map(MeterType::getName)
+                            .anyMatch(type -> type.equals(meterName))) {
                         System.out.println("Meter already exists!");
                         continue;
                     }
-                    meterService.addNewMeterName(meterName);
-                    System.out.println("Meter successfully added");
+                    meterTypeService.addMeterType(meterName);
+                    System.out.println("Meter type successfully added");
                     break;
                 }
                 case "2": {
                     System.out.println("Users list");
-                    userService.getAllUsers().stream()
-                            .filter(user -> !user.getRole().equals(Role.ADMIN))
-                            .map(User::getUsername)
+                    userService.getAllUsersUsernames()
                             .forEach(System.out::println);
 
                     System.out.println("Enter one of usernames:");
                     String username = scan.nextLine();
 
                     userService.getUserByUsername(username)
-                            .ifPresentOrElse(user -> measurementService.getAllMeasurements(user)
+                            .ifPresentOrElse(user -> measurementService.getAllMeasurementsByUser(user)
                                             .forEach(System.out::println),
                                     () -> System.out.println("No such user found!"));
                     break;
                 }
                 case "3": {
-                    userService.getAllUsers().stream()
-                            .map(User::getUsername)
+                    userService.getAllUsersUsernames()
                             .forEach(System.out::println);
                     break;
                 }
                 case "4": {
-                    LoggerUtil.getLogInfo().forEach(System.out::println);
+                    AuditUtil.getAuditInfo().forEach(System.out::println);
                     break;
                 }
                 case "5":
@@ -187,7 +187,7 @@ public class Application {
             command = scan.nextLine();
             switch (command) {
                 case "1": {
-                    measurementService.getRelevantMeasurements(currentUser).forEach(System.out::println);
+                    measurementService.getRelevantMeasurementsForUser(currentUser).forEach(System.out::println);
                     break;
                 }
                 case "2": {
@@ -201,7 +201,7 @@ public class Application {
                             System.out.println("Error, try again!");
                         }
                     }
-                    System.out.println("Moths:");
+                    System.out.println("Months:");
                     Arrays.stream(Month.values()).forEach(System.out::println);
                     Month month;
                     while (true) {
@@ -214,23 +214,23 @@ public class Application {
                         }
                     }
                     LocalDate date = LocalDate.of(year, month, 1);
-                    measurementService.getMeasurementsByMonth(currentUser, date).forEach(System.out::println);
+                    measurementService.getMeasurementsByDateAndUser(currentUser, date).forEach(System.out::println);
                     break;
                 }
                 case "3": {
-                    measurementService.getAllMeasurements(currentUser).forEach(System.out::println);
+                    measurementService.getAllMeasurementsByUser(currentUser).forEach(System.out::println);
                     break;
                 }
                 case "4": {
-                    System.out.println("Available meters:");
-                    meterService.getAvailableMeterNames().forEach(System.out::println);
-                    Meter meter;
+                    System.out.println("Available meter types:");
+                    meterTypeService.getAllMeterTypes().stream().map(MeterType::getName).forEach(System.out::println);
+                    MeterType type;
                     while (true) {
-                        System.out.println("Enter one of meters name:");
-                        String meterName = scan.nextLine();
-                        Optional<Meter> maybeMeter = meterService.getMeter(meterName);
-                        if (maybeMeter.isPresent()) {
-                            meter = maybeMeter.get();
+                        System.out.println("Enter one of meter types name:");
+                        String meterTypeName = scan.nextLine();
+                        Optional<MeterType> maybeType = meterTypeService.getMeterTypeByName(meterTypeName);
+                        if (maybeType.isPresent()) {
+                            type = maybeType.get();
                             break;
                         } else {
                             System.out.println("Error, try again!");
@@ -251,18 +251,21 @@ public class Application {
                             .date(LocalDateTime.now())
                             .build();
 
-                    currentUser.getMeters().stream()
-                            .filter(userMeter -> userMeter.getName().equals(meter.getName()))
-                            .findFirst()
-                            .ifPresentOrElse(userMeter -> {
-                                boolean result = measurementService.addMeasurement(userMeter, measurement);
-                                if(result) System.out.println("Successfully added");
-                                else System.out.println("Measurement is not valid: wrong date or value!");
-                                    },
-                                    () -> {
-                                        meter.addMeasurement(measurement);
-                                        currentUser.addMeter(meter);
-                                    });
+                    Optional<Meter> maybeMeter = currentUser.getMeters().stream()
+                            .filter(userMeter -> userMeter.getType().getName().equals(type.getName()))
+                            .findFirst();
+
+                    if (maybeMeter.isPresent()) {
+                        boolean result = measurementService.addMeasurementToMeter(maybeMeter.get(), measurement);
+                        if (result) System.out.println("Successfully added");
+                        else System.out.println("Measurement is not valid: wrong date or value!");
+                    } else {
+                        Meter meter = new Meter();
+                        meter.setType(type);
+                        meterService.addMeterToUser(meter, currentUser);
+                        measurementService.addMeasurementToMeter(meter, measurement);
+                    }
+                    AuditUtil.write(LocalDateTime.now() + " User: " + currentUser.getUsername() + " submitted measurement: " + measurement + " to meter: " + measurement.getMeter());
                     break;
                 }
                 case "5":
@@ -276,6 +279,7 @@ public class Application {
 
     /**
      * Scans user input and registers user in system
+     *
      * @return Empty optional if user already exists otherwise optional of new user
      */
     protected Optional<User> register() {
@@ -303,14 +307,12 @@ public class Application {
                 .role(role)
                 .build();
 
-        if (userService.register(user)) {
-            return Optional.of(user);
-        }
-        return Optional.empty();
+        return userService.register(user);
     }
 
     /**
      * Scans user input and authorizes user in the system
+     *
      * @return empty optional if user does not exist or wrong password otherwise return optional of authorized user
      */
     protected Optional<User> authorize() {

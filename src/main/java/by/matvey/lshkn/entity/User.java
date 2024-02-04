@@ -6,14 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Meter entity
- * <p>Fields:</p>
- * <p>username -> username</p>
- * <p>password -> password</p>
- * <p>role -> role of user</p>
- * <p>meters -> List of meters which are related to this User</p>
- * @see User
- * @see Measurement
+ * User entity
+ *
+ * @see Role
+ * @see Meter
  */
 @Data
 @ToString(exclude = {"meters", "password"})
@@ -22,14 +18,33 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class User {
+    /**
+     * Unique user identifier
+     */
+    private Long id;
+    /**
+     * Username of user
+     */
     private String username;
+    /**
+     * user's password
+     */
     private String password;
+    /**
+     * Role of user
+     *
+     * @see Role
+     */
     private Role role;
+    /**
+     * List with all meters that belong to user
+     */
     @Builder.Default
     private List<Meter> meters = new ArrayList<>();
 
     /**
      * Adds meter to List and connects User entity with Meter entity
+     *
      * @param meter meter to add
      * @see Meter
      */
@@ -40,6 +55,7 @@ public class User {
 
     /**
      * Deletes measurement from List and breaks connection between User entity and Meter entity
+     *
      * @param meter meter to delete
      * @see Meter
      */

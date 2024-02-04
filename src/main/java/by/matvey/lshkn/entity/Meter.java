@@ -7,10 +7,7 @@ import java.util.List;
 
 /**
  * Meter entity
- * <p>Fields:</p>
- * <p>Name -> name of meter</p>
- * <p>Owner -> User which owns current meter</p>
- * <p>Measurements -> List of measurements which are related to this meter</p>
+ *
  * @see User
  * @see Measurement
  */
@@ -21,13 +18,31 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class Meter {
-    private String name;
+    /**
+     * Unique meter identifier
+     */
+    private Long id;
+    /**
+     * Type of meter
+     *
+     * @see MeterType
+     */
+    private MeterType type;
+    /**
+     * Owner of this meter
+     */
     private User owner;
+    /**
+     * List with all measurements that belong to this meter
+     *
+     * @see Measurement
+     */
     @Builder.Default
     private List<Measurement> measurements = new ArrayList<>();
 
     /**
      * Adds measurement to List and connects Meter entity with Measurement entity
+     *
      * @param measurement measurement to add
      * @see Measurement
      */
@@ -38,6 +53,7 @@ public class Meter {
 
     /**
      * Deletes measurement from List and breaks connection between Meter entity and Measurement entity
+     *
      * @param measurement measurement to delete
      * @see Measurement
      */

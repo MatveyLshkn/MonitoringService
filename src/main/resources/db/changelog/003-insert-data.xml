@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+            https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd"
+        logicalFilePath="db/changelog.xml">
+    <changeSet id="002-insert-data" author="lma">
+        <insert tableName="meter_type">
+            <column name="name" value="heat"/>
+        </insert>
+        <insert tableName="meter_type">
+            <column name="name" value="hot_water"/>
+        </insert>
+        <insert tableName="meter_type">
+            <column name="name" value="cold_water"/>
+        </insert>
+
+        <insert tableName="users">
+            <column name="username" value="Admin"/>
+            <column name="password" value="admin"/>
+            <column name="role" value="ADMIN"/>
+        </insert>
+        <insert tableName="users">
+            <column name="username" value="User"/>
+            <column name="password" value="user"/>
+            <column name="role" value="USER"/>
+        </insert>
+
+        <insert tableName="meter">
+            <column name="meter_type_id" value="1"/>
+            <column name="owner_id" value="2"/>
+        </insert>
+        <insert tableName="meter">
+            <column name="meter_type_id" value="3"/>
+            <column name="owner_id" value="2"/>
+        </insert>
+
+        <insert tableName="measurement">
+            <column name="value" value="12.3"/>
+            <column name="date" value="2018-05-07"/>
+            <column name="meter_id" value="1"/>
+        </insert>
+        <insert tableName="measurement">
+            <column name="value" value="17.17"/>
+            <column name="date" value="2014-09-10"/>
+            <column name="meter_id" value="2"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

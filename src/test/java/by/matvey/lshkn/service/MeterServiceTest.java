@@ -2,53 +2,41 @@ package by.matvey.lshkn.service;
 
 
 import by.matvey.lshkn.entity.Meter;
-import org.junit.jupiter.api.BeforeAll;
+import by.matvey.lshkn.entity.MeterType;
+import by.matvey.lshkn.entity.Role;
+import by.matvey.lshkn.entity.User;
+import by.matvey.lshkn.repository.impl.MeterRepository;
 import org.junit.jupiter.api.Test;
-
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
 
-
+@ExtendWith(MockitoExtension.class)
 class MeterServiceTest {
-    private static MeterService service = MeterService.getInstance();
-
-    @BeforeAll
-    static void init() {
-        Set<String> availableMeterNames = new HashSet<>();
-        availableMeterNames.add("heat");
-        availableMeterNames.add("hot_water");
-        availableMeterNames.add("cold_water");
-        service.setAvailableMeterNames(availableMeterNames);
-    }
+    @Mock
+    private MeterRepository meterRepository;
+    @InjectMocks
+    private MeterService meterService = MeterService.getInstance();
 
     @Test
-    void getMeterIfExists() {
-        Optional<Meter> maybeMeter = service.getMeter("heat");
+    void addMeterToUser() {
+        User user = User.builder()
+                .username("Test")
+                .password("test")
+                .role(Role.USER)
+                .build();
+        Meter meter = Meter.builder()
+                .type(new MeterType(null, "SomeType"))
+                .build();
+        Mockito.doReturn(meter).when(meterRepository).save(meter);
 
-        assertThat(maybeMeter).isNotEmpty();
-        assertThat(maybeMeter.get().getName()).isEqualTo("heat");
-    }
+        meterService.addMeterToUser(meter, user);
 
-    @Test
-    void getEmptyMeterIfDoesntExist() {
-        Optional<Meter> maybeMeter = service.getMeter("stub");
-
-        assertThat(maybeMeter).isEmpty();
-    }
-
-    @Test
-    void addNewMeterName() {
-        int prevSize = service.getAvailableMeterNames().size();
-
-        service.addNewMeterName("Test");
-
-        assertAll(
-                () -> assertThat(prevSize).isLessThan(service.getAvailableMeterNames().size()),
-                () -> assertThat(service.getAvailableMeterNames()).contains("Test")
-        );
+        assertThat(meter.getOwner()).isEqualTo(user);
+        assertThat(user.getMeters()).contains(meter);
     }
 }
