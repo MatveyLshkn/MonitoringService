@@ -6,10 +6,6 @@ import java.time.LocalDateTime;
 
 /**
  * Measurement entity
- * <p>Fields:</p>
- * <p>Value -> measurement value</p>
- * <p>Date -> date of measurement submission</p>
- * <p>Meter -> meter to which measurement related</p>
  */
 @Data
 @EqualsAndHashCode(exclude = "meter")
@@ -17,7 +13,20 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class Measurement {
+    /**
+     * Unique measurement identifier
+     */
+    private Long id;
+    /**
+     * Value of measurement
+     */
     private Double value;
+    /**
+     * Date the measurement was taken
+     */
     private LocalDateTime date;
+    /**
+     * Meter to which the measurements belong
+     */
     private Meter meter;
 }
