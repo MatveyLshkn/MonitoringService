@@ -73,10 +73,12 @@ public class MeasurementService {
                 break;
             }
             case "username":{
-                JsonNode usernameNode = jsonNode.get("username");
-                if(usernameNode!=null){
-                    Optional<User> user1 = userRepository.findByUsername(usernameNode.asText());
-                    if(user1.isPresent()) measurements = getAllMeasurementsByUser(user1.get());
+                if(user.getRole().equals(Role.ADMIN)) {
+                    JsonNode usernameNode = jsonNode.get("username");
+                    if (usernameNode != null) {
+                        Optional<User> user1 = userRepository.findByUsername(usernameNode.asText());
+                        if (user1.isPresent()) measurements = getAllMeasurementsByUser(user1.get());
+                    }
                 }
                 break;
             }

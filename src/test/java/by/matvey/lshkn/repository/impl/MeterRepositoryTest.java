@@ -41,6 +41,7 @@ class MeterRepositoryTest {
 
     @Test
     @Order(1)
+    @DisplayName("Find meter by id")
     void findById() {
         Optional<Meter> maybeMeter = meterRepository.findById(1L);
 
@@ -49,6 +50,7 @@ class MeterRepositoryTest {
 
     @Test
     @Order(2)
+    @DisplayName("Find all meters by user id")
     void findAllByUserId() {
         List<Meter> meters = meterRepository.findAllByUserId(2L);
 
