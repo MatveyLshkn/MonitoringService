@@ -151,9 +151,13 @@ class MeasurementServiceTest {
                 .value(123d)
                 .date(LocalDateTime.now())
                 .build();
-        Mockito.doReturn(measurement).when(measurementRepository).save(measurement);
+        Mockito.doReturn(Measurement.builder()
+                .id(6L)
+                .value(123d)
+                .date(LocalDateTime.now())
+                .build()).when(measurementRepository).save(measurement);
 
-        boolean result = service.addMeasurementToMeter(meter, measurement);
+        boolean result = service.addMeasurementToMeter(meter, measurement).getId() != null;
 
         assertThat(result).isTrue();
         assertThat(measurement.getMeter()).isEqualTo(meter);
@@ -174,7 +178,7 @@ class MeasurementServiceTest {
                 .build();
         meter.addMeasurement(measurement);
 
-        boolean result = service.addMeasurementToMeter(meter, measurement2);
+        boolean result = service.addMeasurementToMeter(meter, measurement2).getId() != null;
 
         assertThat(result).isFalse();
     }
@@ -193,7 +197,7 @@ class MeasurementServiceTest {
                 .build();
         meter.addMeasurement(measurement);
 
-        boolean result = service.addMeasurementToMeter(meter, measurement2);
+        boolean result = service.addMeasurementToMeter(meter, measurement2).getId() != null;
 
         assertThat(result).isFalse();
     }

@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id "io.freefair.aspectj.post-compile-weaving" version "8.4"
 }
 
 group = 'by.matvey.lshkn'
@@ -8,6 +9,9 @@ version = '1.0-SNAPSHOT'
 repositories {
     mavenCentral()
 }
+configurations {
+    aspectj
+}
 
 dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.30'
@@ -15,21 +19,55 @@ dependencies {
     testCompileOnly 'org.projectlombok:lombok:1.18.30'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
 
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+
+    implementation 'org.aspectj:aspectjtools:1.9.21'
+    implementation 'org.aspectj:aspectjrt:1.9.21'
+    compileOnly 'org.aspectj:aspectjweaver:1.9.21'
+
+    implementation 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+
+    compileOnly 'jakarta.servlet:jakarta.servlet-api:6.1.0-M1'
+
+    testImplementation 'org.apache.tomcat:tomcat-catalina:10.1.18'
+
+
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.16.1'
+
+
     implementation 'org.postgresql:postgresql:42.7.1'
-
     testImplementation 'org.testcontainers:postgresql:1.19.4'
-
     implementation 'org.liquibase:liquibase-core:4.25.1'
 
     testImplementation 'org.mockito:mockito-core:5.9.0'
     testImplementation 'org.mockito:mockito-junit-jupiter:5.9.0'
-
     testImplementation 'org.assertj:assertj-core:3.25.1'
-
     testImplementation platform('org.junit:junit-bom:5.9.1')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    aspectj files("src/main/java/aspects");
 }
+
 
 test {
     useJUnitPlatform()
 }
+
+task cleanOutFolder(type: Delete) {//Cоздал задачу, тк в папке out у меня не обновлялось содержимое.
+    delete 'out'                   // А при удалении папки всё создаётся уже с обновлёнными данными
+}
+assemble.dependsOn cleanOutFolder
+
+task compileAspectJ(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'org.aspectj.tools.ajc.Main'
+    args = [
+            '-classpath', classpath.asPath,
+            '-inpath', sourceSets.main.java.srcDirs.path,
+            '-d', sourceSets.main.output.classesDirs.singleFile,
+            '-aspectpath', configurations.aspectj.asPath,
+            '-sourcepath', sourceSets.main.java.srcDirs.join(File.pathSeparator),
+            '-Xlint:ignore'
+    ]
+}
+compileAspectJ.mustRunAfter(compileJava)
