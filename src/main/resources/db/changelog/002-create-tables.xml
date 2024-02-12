@@ -7,8 +7,13 @@
         logicalFilePath="db/changelog.xml">
 
     <changeSet id="001-create-table" author="lma">
-        <createTable tableName="meter_type">
-            <column name="id" type="BIGINT" autoIncrement="true" remarks="Id of meterType">
+        <createSequence sequenceName="meter_type_sequence" startValue="1" incrementBy="1"/>
+        <createSequence sequenceName="users_sequence" startValue="1" incrementBy="1"/>
+        <createSequence sequenceName="meter_sequence" startValue="1" incrementBy="1"/>
+        <createSequence sequenceName="measurement_sequence" startValue="1" incrementBy="1"/>
+
+        <createTable tableName="meter_type" remarks="Table which contains all available meter types">
+            <column name="id" type="BIGINT" defaultValueSequenceNext="meter_type_sequence" remarks="Id of meterType">
                 <constraints primaryKey="true"/>
             </column>
             <column name="name" type="VARCHAR" remarks="Name of meterType">
@@ -16,8 +21,8 @@
             </column>
         </createTable>
 
-        <createTable tableName="users">
-            <column name="id" type="BIGINT" autoIncrement="true" remarks="Id of user">
+        <createTable tableName="users" remarks="Table which contains all users">
+            <column name="id" type="BIGINT" defaultValueSequenceNext="users_sequence" remarks="Id of user">
                 <constraints primaryKey="true"/>
             </column>
             <column name="username" type="VARCHAR" remarks="Username of user">
@@ -31,8 +36,8 @@
             </column>
         </createTable>
 
-        <createTable tableName="meter">
-            <column name="id" type="BIGINT" autoIncrement="true" remarks="Id of meter">
+        <createTable tableName="meter" remarks="Table which contains all meters for all users">
+            <column name="id" type="BIGINT" defaultValueSequenceNext="meter_sequence" remarks="Id of meter">
                 <constraints primaryKey="true"/>
             </column>
             <column name="meter_type_id" type="BIGINT" remarks="Id of meterType">
@@ -43,8 +48,8 @@
             </column>
         </createTable>
 
-        <createTable tableName="measurement">
-            <column name="id" type="BIGINT" autoIncrement="true" remarks="is of measurement">
+        <createTable tableName="measurement" remarks="Table which contains all measurements for all meters">
+            <column name="id" type="BIGINT" defaultValueSequenceNext="measurement_sequence" remarks="is of measurement">
                 <constraints primaryKey="true"/>
             </column>
             <column name="value" type="DOUBLE" remarks="Value of measurement"/>

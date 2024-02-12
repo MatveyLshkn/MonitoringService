@@ -136,7 +136,6 @@ public class MeasurementService {
             Optional<Meter> maybeMeter = user.getMeters().stream()
                     .filter(meter1 -> meter1.getType().getName().equals(meterName))
                     .findFirst();
-
             if (maybeMeter.isEmpty()) {
                 MeterService meterService = MeterService.getInstance();
                 MeterTypeService meterTypeService = MeterTypeService.getInstance();
@@ -147,7 +146,7 @@ public class MeasurementService {
                             .build();
                     meterService.addMeterToUser(meter, user);
                 }
-            }
+            }else meter = maybeMeter.get();
         }
         if (meter != null && measurement.getValue() != null) {
             measurement = addMeasurementToMeter(meter, measurement);

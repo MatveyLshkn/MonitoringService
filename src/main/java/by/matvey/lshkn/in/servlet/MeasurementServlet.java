@@ -53,7 +53,7 @@ public class MeasurementServlet extends HttpServlet {
         }
 
         MeasurementDto measurementDto = measurementService.save(req);
-        if (measurementDto.getId() == null || Validator.validateMeasurementDto(measurementDto)) {
+        if (measurementDto.getId() == null || !Validator.validateMeasurementDto(measurementDto)) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         } else {
             resp.setStatus(HttpServletResponse.SC_OK);
