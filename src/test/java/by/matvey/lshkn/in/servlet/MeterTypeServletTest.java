@@ -1,8 +1,9 @@
-package by.matvey.lshkn.servlet;
+package by.matvey.lshkn.in.servlet;
 
 import by.matvey.lshkn.dto.MeterTypeDto;
 import by.matvey.lshkn.dto.UserDto;
 import by.matvey.lshkn.entity.MeterType;
+import by.matvey.lshkn.in.servlet.MeterTypeServlet;
 import by.matvey.lshkn.service.MeterTypeService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

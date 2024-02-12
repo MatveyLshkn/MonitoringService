@@ -1,6 +1,7 @@
-package by.matvey.lshkn.servlet;
+package by.matvey.lshkn.in.servlet;
 
 import by.matvey.lshkn.dto.UserDto;
+import by.matvey.lshkn.in.servlet.UserServlet;
 import by.matvey.lshkn.service.UserService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

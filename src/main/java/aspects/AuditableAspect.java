@@ -14,6 +14,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
+/**
+ * Aspect that creates code to write auditions about user
+ * */
 @Aspect
 public class AuditableAspect {
     @Pointcut("@annotation(by.matvey.lshkn.annotation.Auditable) && execution(* *(..))")

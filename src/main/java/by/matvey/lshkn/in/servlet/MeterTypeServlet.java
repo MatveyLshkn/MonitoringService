@@ -1,4 +1,4 @@
-package by.matvey.lshkn.servlet;
+package by.matvey.lshkn.in.servlet;
 
 import by.matvey.lshkn.dto.MeterTypeDto;
 import by.matvey.lshkn.dto.UserDto;
@@ -18,6 +18,9 @@ import java.io.PrintWriter;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Servlet for meter types
+ */
 @WebServlet("/meter-types")
 public class MeterTypeServlet extends HttpServlet {
     private final ObjectMapper objectMapper = new ObjectMapper();

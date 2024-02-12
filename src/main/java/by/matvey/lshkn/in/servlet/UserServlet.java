@@ -1,4 +1,4 @@
-package by.matvey.lshkn.servlet;
+package by.matvey.lshkn.in.servlet;
 
 import by.matvey.lshkn.annotation.Loggable;
 import by.matvey.lshkn.dto.UserDto;
@@ -16,6 +16,9 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+/**
+ * Servlet for users
+ */
 @WebServlet("/users")
 public class UserServlet extends HttpServlet {
     private final ObjectMapper objectMapper = new ObjectMapper();

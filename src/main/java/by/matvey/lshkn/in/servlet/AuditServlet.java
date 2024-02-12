@@ -1,4 +1,4 @@
-package by.matvey.lshkn.servlet;
+package by.matvey.lshkn.in.servlet;
 
 import by.matvey.lshkn.dto.UserDto;
 import by.matvey.lshkn.entity.Role;
@@ -13,6 +13,9 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+/**
+ * Servlet for auditions
+ */
 @WebServlet("/auditions")
 public class AuditServlet extends HttpServlet {
     @Override

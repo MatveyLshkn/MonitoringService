@@ -6,6 +6,7 @@
             https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd"
         logicalFilePath="db/changelog.xml">
     <changeSet id="drop-all" author="lma">
+<!--file intended to delete schemas and data from database (used in javas script DatabaseCreator) -->
         <sql>
             DROP SCHEMA IF EXISTS liquibase;
         </sql>

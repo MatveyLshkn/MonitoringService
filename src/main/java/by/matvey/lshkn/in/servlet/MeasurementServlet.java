@@ -1,4 +1,4 @@
-package by.matvey.lshkn.servlet;
+package by.matvey.lshkn.in.servlet;
 
 import by.matvey.lshkn.dto.MeasurementDto;
 import by.matvey.lshkn.dto.UserDto;
@@ -17,6 +17,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 
+/**
+ * Servlet for measurements
+ */
 @WebServlet("/measurements")
 public class MeasurementServlet extends HttpServlet {
     private final ObjectMapper objectMapper = new ObjectMapper();

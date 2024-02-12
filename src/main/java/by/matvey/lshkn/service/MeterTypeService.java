@@ -26,6 +26,12 @@ public class MeterTypeService {
         return INSTANCE;
     }
 
+    /**
+     * Saves meterType from HttpServletRequest content
+     *
+     * @param req HttpServletRequest
+     * @return returns saved meterTypeDto
+     */
     public MeterTypeDto save(HttpServletRequest req) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         BufferedReader reader = req.getReader();

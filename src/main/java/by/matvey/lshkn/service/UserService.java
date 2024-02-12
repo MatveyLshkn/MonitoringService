@@ -24,6 +24,7 @@ import java.util.*;
 public class UserService {
     private static final UserService INSTANCE = new UserService();
     private UserRepository userRepository = UserRepository.getInstance();
+
     private UserService() {
     }
 
@@ -31,6 +32,12 @@ public class UserService {
         return INSTANCE;
     }
 
+    /**
+     * Saves or authenticates user from HttpServletRequest content
+     *
+     * @param req HttpServletRequest
+     * @return returns saved/authenticated userDto
+     */
     @Loggable
     public UserDto save(HttpServletRequest req) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -43,7 +50,7 @@ public class UserService {
             stringBuilder.append((char) reader.read());
         }
         UserDto userDto = objectMapper.readValue(stringBuilder.toString(), UserDto.class);
-        if(!Validator.validateUserDto(userDto)){
+        if (!Validator.validateUserDto(userDto)) {
             return userDto;
         }
         UserMapper mapper = Mappers.getMapper(UserMapper.class);

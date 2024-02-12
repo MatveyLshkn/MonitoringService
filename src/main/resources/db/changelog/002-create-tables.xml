@@ -8,48 +8,48 @@
 
     <changeSet id="001-create-table" author="lma">
         <createTable tableName="meter_type">
-            <column name="id" type="BIGINT" autoIncrement="true">
+            <column name="id" type="BIGINT" autoIncrement="true" remarks="Id of meterType">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="name" type="VARCHAR">
+            <column name="name" type="VARCHAR" remarks="Name of meterType">
                 <constraints nullable="false" unique="true"/>
             </column>
         </createTable>
 
         <createTable tableName="users">
-            <column name="id" type="BIGINT" autoIncrement="true">
+            <column name="id" type="BIGINT" autoIncrement="true" remarks="Id of user">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="username" type="VARCHAR">
+            <column name="username" type="VARCHAR" remarks="Username of user">
                 <constraints nullable="false" unique="true"/>
             </column>
-            <column name="password" type="VARCHAR">
+            <column name="password" type="VARCHAR" remarks="Users password">
                 <constraints nullable="false"/>
             </column>
-            <column name="role" type="VARCHAR">
+            <column name="role" type="VARCHAR" remarks="Users role">
                 <constraints nullable="false"/>
             </column>
         </createTable>
 
         <createTable tableName="meter">
-            <column name="id" type="BIGINT" autoIncrement="true">
+            <column name="id" type="BIGINT" autoIncrement="true" remarks="Id of meter">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="meter_type_id" type="BIGINT">
+            <column name="meter_type_id" type="BIGINT" remarks="Id of meterType">
                 <constraints nullable="false" foreignKeyName="fk_meter_meter_type" referencedTableName="meter_type" referencedColumnNames="id"/>
             </column>
-            <column name="owner_id" type="BIGINT">
+            <column name="owner_id" type="BIGINT" remarks="Id of meter owner">
                 <constraints nullable="false" foreignKeyName="fk_meter_users" referencedTableName="users" referencedColumnNames="id"/>
             </column>
         </createTable>
 
         <createTable tableName="measurement">
-            <column name="id" type="BIGINT" autoIncrement="true">
+            <column name="id" type="BIGINT" autoIncrement="true" remarks="is of measurement">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="value" type="DOUBLE"/>
-            <column name="date" type="TIMESTAMP"/>
-            <column name="meter_id" type="BIGINT">
+            <column name="value" type="DOUBLE" remarks="Value of measurement"/>
+            <column name="date" type="TIMESTAMP" remarks="Date when measurement was created"/>
+            <column name="meter_id" type="BIGINT" remarks="Id of meter to which measurement is related">
                 <constraints nullable="true" foreignKeyName="fk_measurement_meter" referencedTableName="meter" referencedColumnNames="id"/>
             </column>
         </createTable>

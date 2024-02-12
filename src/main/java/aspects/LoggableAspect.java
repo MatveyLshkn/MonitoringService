@@ -5,6 +5,9 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 
+/**
+ * Aspect that creates code to write logs for methods
+ * */
 @Aspect
 public class LoggableAspect {
     @Pointcut("@annotation(by.matvey.lshkn.annotation.Loggable) && execution(* *(..))")

@@ -11,7 +11,6 @@ import by.matvey.lshkn.util.Validator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.mapstruct.factory.Mappers;
 
@@ -39,10 +38,16 @@ public class MeasurementService {
         return INSTANCE;
     }
 
+    /**
+     * Gets MeasurementDtos depending on parameters in HttpServletRequest
+     *
+     * @param req HttpServletRequest
+     * @return returns list of measurementDtos depending on parameters in HttpServletRequest
+     */
     public List<MeasurementDto> get(HttpServletRequest req) throws IOException {
         HttpSession session = req.getSession();
         UserDto userDto = (UserDto) session.getAttribute("user");
-        if(!Validator.validateUserDto(userDto))return new ArrayList<>();
+        if (!Validator.validateUserDto(userDto)) return new ArrayList<>();
 
         Optional<User> maybeUser = userRepository.findByUsername(userDto.getUsername());
         if (maybeUser.isEmpty()) return new ArrayList<>();
@@ -57,7 +62,7 @@ public class MeasurementService {
         JsonNode jsonNode = objectMapper.readTree(stringBuilder.toString());
         JsonNode typeNode = jsonNode.get("type");
         String type = typeNode == null ? "" : typeNode.asText();
-        if(user.getRole().equals(Role.ADMIN))type = "username";
+        if (user.getRole().equals(Role.ADMIN)) type = "username";
 
         MeasurementMapper measurementMapper = Mappers.getMapper(MeasurementMapper.class);
         List<Measurement> measurements = new ArrayList<>();
@@ -72,8 +77,8 @@ public class MeasurementService {
                 measurements = getMeasurementsByDateAndUser(user, localDate);
                 break;
             }
-            case "username":{
-                if(user.getRole().equals(Role.ADMIN)) {
+            case "username": {
+                if (user.getRole().equals(Role.ADMIN)) {
                     JsonNode usernameNode = jsonNode.get("username");
                     if (usernameNode != null) {
                         Optional<User> user1 = userRepository.findByUsername(usernameNode.asText());
@@ -91,11 +96,18 @@ public class MeasurementService {
                 .filter(Validator::validateMeasurementDto)
                 .collect(Collectors.toList());
     }
+
+    /**
+     * Saves measurement from HttpServletRequest content
+     *
+     * @param req HttpServletRequest
+     * @return returns saved measurementDto
+     */
     @Auditable
     public MeasurementDto save(HttpServletRequest req) throws IOException {
         HttpSession session = req.getSession();
         UserDto userDto = (UserDto) session.getAttribute("user");
-        if(!Validator.validateUserDto(userDto)){
+        if (!Validator.validateUserDto(userDto)) {
             return new MeasurementDto();
         }
 
