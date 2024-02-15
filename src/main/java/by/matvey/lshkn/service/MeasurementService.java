@@ -1,20 +1,34 @@
 package by.matvey.lshkn.service;
 
-import by.matvey.lshkn.entity.Measurement;
-import by.matvey.lshkn.entity.Meter;
-import by.matvey.lshkn.entity.User;
+import by.matvey.lshkn.annotation.Auditable;
+import by.matvey.lshkn.dto.MeasurementDto;
+import by.matvey.lshkn.dto.UserDto;
+import by.matvey.lshkn.entity.*;
+import by.matvey.lshkn.mapper.MeasurementMapper;
 import by.matvey.lshkn.repository.impl.MeasurementRepository;
+import by.matvey.lshkn.repository.impl.UserRepository;
+import by.matvey.lshkn.util.Validator;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import org.mapstruct.factory.Mappers;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Class intended to work with Measurements
  */
 public class MeasurementService {
     private MeasurementRepository measurementRepository = MeasurementRepository.getInstance();
+    private UserRepository userRepository = UserRepository.getInstance();
     private static final MeasurementService INSTANCE = new MeasurementService();
 
     private MeasurementService() {
@@ -22,6 +36,123 @@ public class MeasurementService {
 
     public static MeasurementService getInstance() {
         return INSTANCE;
+    }
+
+    /**
+     * Gets MeasurementDtos depending on parameters in HttpServletRequest
+     *
+     * @param req HttpServletRequest
+     * @return returns list of measurementDtos depending on parameters in HttpServletRequest
+     */
+    public List<MeasurementDto> get(HttpServletRequest req) throws IOException {
+        HttpSession session = req.getSession();
+        UserDto userDto = (UserDto) session.getAttribute("user");
+        if (!Validator.validateUserDto(userDto)) return new ArrayList<>();
+
+        Optional<User> maybeUser = userRepository.findByUsername(userDto.getUsername());
+        if (maybeUser.isEmpty()) return new ArrayList<>();
+        User user = maybeUser.get();
+
+        BufferedReader reader = req.getReader();
+        StringBuilder stringBuilder = new StringBuilder();
+        while (reader.ready()) {
+            stringBuilder.append((char) reader.read());
+        }
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree(stringBuilder.toString());
+        JsonNode typeNode = jsonNode.get("type");
+        String type = typeNode == null ? "" : typeNode.asText();
+        if (user.getRole().equals(Role.ADMIN)) type = "username";
+
+        MeasurementMapper measurementMapper = Mappers.getMapper(MeasurementMapper.class);
+        List<Measurement> measurements = new ArrayList<>();
+        switch (type) {
+            case "relevant": {
+                measurements = getRelevantMeasurementsForUser(user);
+                break;
+            }
+            case "date": {
+                String date = jsonNode.get("date").asText();
+                LocalDate localDate = LocalDate.parse(date);
+                measurements = getMeasurementsByDateAndUser(user, localDate);
+                break;
+            }
+            case "username": {
+                if (user.getRole().equals(Role.ADMIN)) {
+                    JsonNode usernameNode = jsonNode.get("username");
+                    if (usernameNode != null) {
+                        Optional<User> user1 = userRepository.findByUsername(usernameNode.asText());
+                        if (user1.isPresent()) measurements = getAllMeasurementsByUser(user1.get());
+                    }
+                }
+                break;
+            }
+            default: {
+                measurements = getAllMeasurementsByUser(user);
+            }
+        }
+        return measurements.stream()
+                .map(measurementMapper::measurementToMeasurementDto)
+                .filter(Validator::validateMeasurementDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Saves measurement from HttpServletRequest content
+     *
+     * @param req HttpServletRequest
+     * @return returns saved measurementDto
+     */
+    @Auditable
+    public MeasurementDto save(HttpServletRequest req) throws IOException {
+        HttpSession session = req.getSession();
+        UserDto userDto = (UserDto) session.getAttribute("user");
+        if (!Validator.validateUserDto(userDto)) {
+            return new MeasurementDto();
+        }
+
+        Optional<User> maybeUser = userRepository.findByUsername(userDto.getUsername());
+        if (maybeUser.isEmpty()) return new MeasurementDto();
+        User user = maybeUser.get();
+
+        BufferedReader reader = req.getReader();
+        StringBuilder stringBuilder = new StringBuilder();
+        while (reader.ready()) {
+            stringBuilder.append((char) reader.read());
+        }
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree(stringBuilder.toString());
+
+        Measurement measurement = new Measurement();
+        measurement.setDate(LocalDateTime.now());
+
+        JsonNode valueNode = jsonNode.get("value");
+        if (valueNode != null) measurement.setValue(Double.parseDouble(valueNode.asText()));
+
+        JsonNode meterNode = jsonNode.get("meter");
+        Meter meter = null;
+        if (meterNode != null) {
+            String meterName = meterNode.asText();
+            Optional<Meter> maybeMeter = user.getMeters().stream()
+                    .filter(meter1 -> meter1.getType().getName().equals(meterName))
+                    .findFirst();
+            if (maybeMeter.isEmpty()) {
+                MeterService meterService = MeterService.getInstance();
+                MeterTypeService meterTypeService = MeterTypeService.getInstance();
+                Optional<MeterType> meterType = meterTypeService.getMeterTypeByName(meterName);
+                if (meterType.isPresent()) {
+                    meter = Meter.builder()
+                            .type(meterType.get())
+                            .build();
+                    meterService.addMeterToUser(meter, user);
+                }
+            }else meter = maybeMeter.get();
+        }
+        if (meter != null && measurement.getValue() != null) {
+            measurement = addMeasurementToMeter(meter, measurement);
+        }
+        MeasurementMapper measurementMapper = Mappers.getMapper(MeasurementMapper.class);
+        return measurementMapper.measurementToMeasurementDto(measurement);
     }
 
     /**
@@ -86,20 +217,20 @@ public class MeasurementService {
      * @param meter       meter in which measurement will be added
      * @param measurement measurement that will be added after successful validation
      */
-    public boolean addMeasurementToMeter(Meter meter, Measurement measurement) {
-        int prevSize = meter.getMeasurements().size();
-        Optional<Measurement> relevantMeasurement = getRelevantMeasurementFromMeter(meter);
-        relevantMeasurement.ifPresentOrElse(measurement1 -> {
-            if (!measurement1.getDate().getMonth().equals(measurement.getDate().getMonth())
-                && !(measurement1.getDate().getYear() == measurement.getDate().getYear())
-                && measurement1.getValue() <= measurement.getValue()) {
+    public Measurement addMeasurementToMeter(Meter meter, Measurement measurement) {
+        Optional<Measurement> maybeRelevantMeasurement = getRelevantMeasurementFromMeter(meter);
+        if (maybeRelevantMeasurement.isPresent()) {
+            Measurement releavantMeasurement = maybeRelevantMeasurement.get();
+            if (releavantMeasurement.getValue() <= measurement.getValue() &&
+                !(releavantMeasurement.getDate().getMonth().equals(measurement.getDate().getMonth())
+                  && releavantMeasurement.getDate().getYear() == measurement.getDate().getYear())) {
                 meter.addMeasurement(measurement);
-                measurementRepository.save(measurement);
+                measurement = measurementRepository.save(measurement);
             }
-        }, () -> {
+        } else {
             meter.addMeasurement(measurement);
-            measurementRepository.save(measurement);
-        });
-        return prevSize != meter.getMeasurements().size();
+            measurement = measurementRepository.save(measurement);
+        }
+        return measurement;
     }
 }

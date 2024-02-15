@@ -1,8 +1,16 @@
 package by.matvey.lshkn.service;
 
+import by.matvey.lshkn.dto.MeterTypeDto;
 import by.matvey.lshkn.entity.MeterType;
+import by.matvey.lshkn.mapper.MeterTypeMapper;
 import by.matvey.lshkn.repository.impl.MeterTypeRepository;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
+import org.mapstruct.factory.Mappers;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,6 +24,28 @@ public class MeterTypeService {
 
     public static MeterTypeService getInstance() {
         return INSTANCE;
+    }
+
+    /**
+     * Saves meterType from HttpServletRequest content
+     *
+     * @param req HttpServletRequest
+     * @return returns saved meterTypeDto
+     */
+    public MeterTypeDto save(HttpServletRequest req) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        BufferedReader reader = req.getReader();
+        StringBuilder stringBuilder = new StringBuilder();
+        while (reader.ready()) {
+            stringBuilder.append((char) reader.read());
+        }
+        JsonNode jsonNode = objectMapper.readTree(stringBuilder.toString());
+        JsonNode nameNode = jsonNode.get("name");
+        if (nameNode != null) {
+            MeterTypeMapper meterTypeMapper = Mappers.getMapper(MeterTypeMapper.class);
+            return meterTypeMapper.meterTypeToMeterTypeDto(addMeterType(nameNode.asText()));
+        }
+        return new MeterTypeDto();
     }
 
     /**
@@ -33,11 +63,12 @@ public class MeterTypeService {
      *
      * @param name name of new meter type
      */
-    public void addMeterType(String name) {
+    public MeterType addMeterType(String name) {
         MeterType newType = new MeterType();
         newType.setName(name);
-        meterTypeRepository.save(newType);
-        if (meterTypes != null) meterTypes.add(newType);
+        MeterType type = meterTypeRepository.save(newType);
+        if (meterTypes != null) meterTypes.add(type);
+        return type;
     }
 
     /**
